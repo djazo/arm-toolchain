@@ -1,4 +1,4 @@
-FROM alpine:latest AS bob-llvm
+FROM alpine:3.20.2 AS bob-llvm
 
 RUN apk add \
   clang \
@@ -12,12 +12,12 @@ RUN mkdir /build ; cd /build ; CC=clang CXX=clang++ cmake -G Ninja /src/LLVM-emb
 RUN cd /build ; ninja llvm-toolchain ; ninja package-llvm-toolchain
 RUN mkdir -p /opt/toolchain ; tar -xvf /build/LLVM-ET*.tar.xz -C /opt/toolchain --strip-components=1
 
-FROM alpine:latest
+FROM alpine:3.20.2
 
+COPY --from=bob-llvm /opt/toolchain /opt/toolchain
 RUN apk add \
   cmake \
   make \
   meson
 
-COPY --from=bob-llvm /opt/toolchain /opt/toolchain
 ENV PATH="/opt/toolchain/bin:${PATH}"
